@@ -1,101 +1,128 @@
-//variables
-const email = document.getElementById('email');
-const asunto = document.getElementById('asunto');
-const mensaje = document.getElementById('mensaje');
-const btnEnviar = document.getElementById('enviar');
-const formularioEnviar = document.getElementById('enviar-mail');
-const resetBtn = document.getElementById('resetBtn')
+const email = document.querySelector('#email');
+const asunto = document.querySelector('#asunto');
+const mensaje = document.querySelector('#mensaje');
+const formulario = document.querySelector('#enviar-mail');
+const resetBtn = document.querySelector('#resetBtn');
+const enviarBtn = document.querySelector('#enviar');
+let alertMensaje;
+let tipoMensaje;
+const expresionRegular = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
-//even Listener
-cargarEnventListener();
+cargarEventListeners();
 
-function cargarEnventListener() {
-	document.addEventListener('DOMContentLoaded', inicioApp);
+function cargarEventListeners() {
+    document.addEventListener('DOMContentLoaded', validarFormulario);
+    resetBtn.addEventListener('click', resetFormulario);
 
-	email.addEventListener('blur', validarCampo);
-	asunto.addEventListener('blur', validarCampo);
-	mensaje.addEventListener('blur', validarCampo);
-
-	formularioEnviar.addEventListener('submit', enviarEmail);
-
-	resetBtn.addEventListener('click', resetFormulario);
+    email.addEventListener('blur', validarCorreo);
+    asunto.addEventListener('blur', validarAsunto);
+    mensaje.addEventListener('blur', validarMensaje);
 }
 
-//Funciones
+function validarFormulario() {
+    const inputClase = formulario.querySelectorAll('input');
 
-function inicioApp() {
-	btnEnviar.disabled = true;
-}
-
-function validarCampo() {
-
-	validarLongitud(this);
-
-	//validar Email
-
-	if (this.type === 'email') {
-		validarEmail(this);
-	}
-
-	let errores = document.querySelectorAll('.error');
-
-	if (email.value !== '' && asunto.value !== '' && mensaje.value !== '') {
-		if (errores.length === 0) {
-			btnEnviar.disabled = false;
-		}
-	} else {
-		inicioApp()
-	}
-}
-
-function enviarEmail(e) {
-	const spinnerGif = document.querySelector('#spinner');
-	spinnerGif.style.display = 'block';
-
-	const enviado = document.createElement('img');
-	enviado.src = 'img/mail.gif';
-	enviado.style.display = 'block';
-
-	setTimeout(function () {
-		spinnerGif.style.display = 'none';
-		document.querySelector('#loaders').appendChild(enviado);
-		setTimeout(function () {
-			enviado.remove();
-			formularioEnviar.reset();
-			inicioApp()
-		}, 4000);
-	}, 2000);
-	e.preventDefault();
-}
-
-function validarLongitud(campo) {
-	if (campo.value.length > 0) {
-		campo.style.borderBottomColor = 'green';
-		campo.classList.remove('error');
-	} else {
-		campo.style.borderBottomColor = 'red';
-		campo.classList.add('error');
-	}
+    let contar = 0;
+    inputClase.forEach(input => {
+        if (input.classList.contains('valid')) {
+            contar++;
+            if (inputClase.length == contar && mensaje.classList.contains('valid')) {
+                enviarBtn.classList.remove('cursor-not-allowed', 'opacity-50');
+                enviarBtn.disabled = false;
+            } else {
+                enviarBtn.classList.add('cursor-not-allowed', 'opacity-50');
+                enviarBtn.disabled = true;
+            }
+        }
+    })
 }
 
 function resetFormulario(e) {
     e.preventDefault();
-    formularioEnviar.reset();
-    email.style.borderBottomColor = null;
-    asunto.style.borderBottomColor = null;
-    mensaje.style.borderBottomColor = null;
-    inicioApp()
+    formulario.reset();
+
+    const limpiarRed = document.querySelectorAll('.border-red-500');
+    limpiarRed.forEach(color => color.classList.remove('border-red-500'));
+
+    const limpiarGreen = document.querySelectorAll('.border-green-500');
+    limpiarGreen.forEach(color => color.classList.remove('border-green-500'));
 }
 
-function validarEmail(campo) {
-	const mensaje = campo.value;
-	let correoValido = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/.test(mensaje);
-	if (correoValido) {
-		campo.style.borderBottomColor = 'green';
-		campo.classList.remove('error');
-	} else {
-		campo.style.borderBottomColor = 'red';
-		campo.classList.add('error');
-		inicioApp()
-	}
+function validarCorreo(e) {
+    if (email.value == '') {
+        alertMensaje = 'Correo no puede ser vacio';
+        tipoMensaje = 'error';
+        mostrarMensajeAlerta(alertMensaje, tipoMensaje, e);
+    } else {
+        if (expresionRegular.test(email.value)) {
+            email.classList.remove('invalid');
+            email.classList.add('valid');
+            tipoMensaje = 'success';
+        } else {
+            email.classList.remove('valid');
+            email.classList.add('invalid');
+            alertMensaje = 'Correo invalido';
+            tipoMensaje = 'error';
+        }
+    }
+    mostrarMensajeAlerta(alertMensaje, tipoMensaje, e);
+    validarFormulario();
+}
+
+function validarAsunto(e) {
+    if (asunto.value == '') {
+        asunto.classList.remove('valid');
+        asunto.classList.add('invalid');
+        alertMensaje = 'Asunto no puede ser vacio';
+        tipoMensaje = 'error';
+    } else {
+        asunto.classList.remove('invalid');
+        asunto.classList.add('valid');
+        tipoMensaje = 'success';
+    }
+    mostrarMensajeAlerta(alertMensaje, tipoMensaje, e);
+    validarFormulario();
+}
+
+function validarMensaje(e) {
+    if (mensaje.value == '') {
+        mensaje.classList.remove('valid');
+        mensaje.classList.add('invalid');
+        alertMensaje = 'Mensaje no puede ser vacio';
+        tipoMensaje = 'error';
+    } else {
+        mensaje.classList.remove('invalid');
+        mensaje.classList.add('valid');
+        tipoMensaje = 'success';
+    }
+    mostrarMensajeAlerta(alertMensaje, tipoMensaje, e);
+    validarFormulario();
+}
+
+function mostrarMensajeAlerta(mensaje, tipo, e) {
+
+    const errores = document.querySelectorAll('.error');
+
+    if (tipo == 'error') {
+        e.target.classList.remove('border-green-500');
+        e.target.classList.add('border-red-500');
+        const mensajeError = document.createElement('p');
+        mensajeError.textContent = mensaje;
+        mensajeError.className = 'border border-red-500 background-red-100 text-red-500 p-3 mt-5 error';
+
+        if (errores.length == 0) {
+            formulario.appendChild(mensajeError);
+        } else {
+            formulario.removeChild(formulario.lastChild);
+            formulario.appendChild(mensajeError);
+        }
+    }
+
+    if (tipo == 'success') {
+        e.target.classList.remove('border-red-500');
+        e.target.classList.add('border-green-500');
+        if (errores.length > 0) {
+            formulario.removeChild(formulario.lastChild);
+        }
+    }
 }
