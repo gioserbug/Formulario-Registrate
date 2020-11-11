@@ -79,9 +79,12 @@ function validarLongitud(campo) {
 }
 
 function resetFormulario(e) {
-	e.preventDefault();
-	formularioEnviar.reset();
-	inicioApp()
+    e.preventDefault();
+    formularioEnviar.reset();
+    email.style.borderBottomColor = null;
+    asunto.style.borderBottomColor = null;
+    mensaje.style.borderBottomColor = null;
+    inicioApp()
 }
 
 function validarEmail(campo) {
